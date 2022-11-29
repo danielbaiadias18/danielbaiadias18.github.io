@@ -1,2 +1,2 @@
-# danielbaiadias18.github.io
+# http://danielbaiadias18.github.io
 Wiki de jogos
