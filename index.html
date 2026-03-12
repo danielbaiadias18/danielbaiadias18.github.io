@@ -1,104 +1,665 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desafio</title>
+    <title>Pedido de Baterias</title>
+    <style>
+        /* ============================
+           VARIÁVEIS DE CORES E TEMA
+           ============================ */
+        :root {
+            --primary-color: #25D366; /* Verde WhatsApp */
+            --primary-dark: #128C7E;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #dddddd;
+            --highlight-bg: #e8f5e9;
+        }
+
+        /* ============================
+           CSS RESET BÁSICO
+           ============================ */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        html {
+            /* Habilita rolagem suave da página */
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 18px; /* Fonte base grande para legibilidade em celular */
+            line-height: 1.5;
+            padding-bottom: 90px; /* Evita que a barra inferior cubra os últimos itens */
+        }
+
+        /* ============================
+           LAYOUT GERAL E TIPOGRAFIA
+           ============================ */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 26px;
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+
+        header p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        /* ============================
+           SEÇÃO DE AUTENTICAÇÃO
+           ============================ */
+        .auth-section {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .auth-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .auth-section input {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            transition: border-color 0.2s;
+        }
+
+        .auth-section input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .auth-error {
+            color: #d32f2f;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+            font-weight: bold;
+        }
+
+        /* ============================
+           LISTA DE PRODUTOS
+           ============================ */
+        .category {
+            margin-bottom: 30px;
+        }
+
+        .category h2 {
+            font-size: 20px;
+            background-color: var(--primary-dark);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .product {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: background-color 0.3s, border-color 0.3s;
+            border: 1px solid transparent;
+        }
+
+        /* Destaque visual quando há itens selecionados */
+        .product.active {
+            background-color: var(--highlight-bg);
+            border-color: var(--primary-color);
+        }
+
+        .product-name {
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        /* Controle de Quantidade e Botões rápidos */
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap; /* Ajusta botões para nova linha se a tela for pequena */
+        }
+        
+        .qty-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .qty-input {
+            width: 60px;
+            height: 44px;
+            text-align: center;
+            font-size: 20px;
+            border: 1px solid var(--border-color);
+            margin: 0 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            /* Remover setas laterais nativas do input type=number */
+            -moz-appearance: textfield;
+        }
+        
+        .qty-input::-webkit-outer-spin-button,
+        .qty-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .quick-add {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Botões padronizados (animação simples) */
+        .btn-minus, .btn-add {
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-minus:active, .btn-add:active {
+            transform: scale(0.92);
+        }
+
+        .btn-minus {
+            background-color: #f44336;
+            color: white;
+            width: 44px;
+            height: 44px;
+            font-size: 24px;
+        }
+
+        .btn-add {
+            background-color: #e0e0e0;
+            color: #333;
+            padding: 10px;
+            min-width: 50px;
+            height: 44px;
+            font-size: 16px;
+        }
+
+        /* ============================
+           BARRA FIXA INFERIOR
+           ============================ */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            z-index: 100;
+        }
+        
+        .bottom-bar-inner {
+            display: flex;
+            max-width: 600px;
+            width: 100%;
+            gap: 10px;
+        }
+
+        .btn-clear {
+            background-color: #ffffff;
+            color: #d32f2f;
+            border: 2px solid #d32f2f;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            flex: 1;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn-clear:active {
+            background-color: #ffebee;
+            transform: scale(0.96);
+        }
+
+        .btn-send {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            flex: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-send:active {
+            background-color: var(--primary-dark);
+            transform: scale(0.96);
+        }
+        
+        /* ============================
+           MODAL/TOAST DE AVISO
+           ============================ */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #323232;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
 </head>
-<style>
-    /* Filho do trovão não sou,
-        mas meu mensageiro é veloz como o vento.
-        Dos pés alados às palavras rápidas,
-        cruzo fronteiras que nenhum mortal ousaria.
-        Carrego segredos, trapaças e acordos,
-        e, mesmo invisível, todos me notam quando chego.
-        Quem sou eu? */
-    body{
-        background-color: #f0f0f0;
-        display: flex;
-    }
-
-    .container {
-        width: 100%;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #f0f0f0;
-        font-family: cursive;
-    }
-    table{
-        position: absolute;
-    }
-
-    table, th,td,tr {
-        border: none;
-        color: #f0f0f0;
-        background-color: #f0f0f0;
-    }
-
-    h1{
-        z-index: 99;
-    }
-</style>
 <body>
-    <table border="1" cellpadding="8" cellspacing="0">
-  <thead>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Zeus</td>
-      <td>O silêncio às vezes grita mais alto que a tempestade.</td>
-      <td>Algoritmo</td>
-    </tr>
-    <tr>
-      <td>Atena</td>
-      <td>Quem tenta segurar a água com as mãos aprende o valor do desapego.</td>
-      <td>Compilador</td>
-    </tr>
-    <tr>
-      <td>Apolo</td>
-      <td>O reflexo no espelho nunca revela quem você é, apenas quem você acha que é.</td>
-      <td>Loop</td>
-    </tr>
-    <tr>
-      <td>Ártemis</td>
-      <td>Toda busca pela liberdade carrega o peso invisível da escolha.</td>
-      <td>Debug</td>
-    </tr>
-    <tr>
-      <td>Poseidon</td>
-      <td>Nem todo oceano precisa ser navegado, alguns existem só para serem contemplados.</td>
-      <td>Framework</td>
-    </tr>
-    <tr>
-      <td>Hades</td>
-      <td>O vazio não é ausência, é espaço esperando ser preenchido.</td>
-      <td>Variável</td>
-    </tr>
-    <tr>
-      <td>Afrodite</td>
-      <td>Até o perfume das flores mais belas se perde no vento do esquecimento.</td>
-      <td>Recursão</td>
-    </tr>
-    <tr>
-      <td>Ares</td>
-      <td>A lâmina que protege hoje é a mesma que amanhã pode ferir quem a segura.</td>
-      <td>Interface</td>
-    </tr>
-    <tr>
-      <td>Hermes</td>
-      <td>Quem procura a chave, esquece que alguns portais não trancam.</td>
-      <td>Repositório</td>
-    </tr>
-    <tr>
-      <td>Hefesto</td>
-      <td>O fogo que constrói também é o mesmo que pode consumir.</td>
-      <td>Middleware</td>
-    </tr>
-  </tbody>
-</table>
-    <container class="container">
-        <h1>Desafie-se</h1>
+
+    <div class="container">
+        <header>
+            <h1>Pedido de Baterias</h1>
+            <p>Selecione as quantidades e envie o pedido diretamente pelo WhatsApp</p>
+        </header>
+
+        <!-- Campo Obrigatório para evitar Spam -->
+        <section class="auth-section">
+            <label for="codigoCliente">Código do Cliente *</label>
+            <input type="text" id="codigoCliente" placeholder="Ex: cliente123" autocomplete="off">
+            <div id="authError" class="auth-error">Código de cliente não encontrado ou não preenchido.</div>
+        </section>
+
+        <!-- Área onde os produtos serão carregados via JS -->
+        <main id="productList">
+            <!-- Renderização dinâmica -->
+        </main>
+    </div>
+
+    <!-- Barra de ação inferior -->
+    <div class="bottom-bar">
+        <div class="bottom-bar-inner">
+            <button class="btn-clear" onclick="limparPedido()">Limpar</button>
+            <button class="btn-send" onclick="enviarWhatsapp()">
+                <!-- Ícone WhatsApp no formato SVG -->
+                <svg xmlns="http://www.w3.org/-2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                </svg>
+                Enviar Pedido
+            </button>
+        </div>
+    </div>
+    
+    <!-- Elemento para feedback visual customizado -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        /* ============================
+           CONFIGURAÇÕES PRINCIPAIS
+           ============================ */
+        
+        // Número da loja (Código do país 55 + DDD + Número)
+        // O usuário lojista deve preenchê-lo
+        const NUMERO_WHATSAPP = "5511999999999"; 
+        
+        // Lista local de clientes válidos
+        // Sugestão: Manter sempre em minúsculo para facilitar validação
+        const codigosValidos = [
+            "cliente123",
+            "revenda01",
+            "oficinaxpto"
+        ];
+
+        /* ============================
+           BASE DE DADOS DE PRODUTOS
+           ============================ */
+        const catalogo = [
+            {
+                categoria: "CRAL",
+                produtos: [
+                    "CLP45VD/E", "CL52JD", "CS60D", "CLP60VD", "CL60VE", 
+                    "CLP60JD", "CLP70VD/E", "CLP75JD", "CL80VD", "CL95VDI", 
+                    "CL40NSD FIT", "CL52NSD CIV", "CL90ND/E", "CL100FE", 
+                    "CL150D", "CL180D/E", "CL225HE/HD", "CFB 52 JD", 
+                    "CFB 60 JD", "CFB 72 JD"
+                ]
+            },
+            {
+                categoria: "MOTO CRAL",
+                produtos: ["CLM 6 D", "CLM 7 D"]
+            },
+            {
+                categoria: "ULTRA / ENERGY",
+                produtos: ["60XD ENERGY", "100E", "150D"]
+            },
+            {
+                categoria: "LINHA FREE",
+                produtos: ["45FD", "52AFD ONIX", "60XFD", "70XFD", "75KAFD"]
+            },
+            {
+                categoria: "ESTACIONARIA",
+                produtos: [
+                    "12CE30", "12CE40", "12CE50", "12CE70", "12CE75", 
+                    "12CE93", "12CE115", "12CE165", "12CE240"
+                ]
+            },
+            {
+                categoria: "MOURA",
+                produtos: [
+                    "M48FD", "M40SD FIT", "M50ED", "M50JD CIV", "M60GD", 
+                    "M60AD", "M70KD", "M75LD", "M90TD", "M100HE", "M150BD"
+                ]
+            }
+        ];
+
+        /* ============================
+           INICIALIZAÇÃO DO SISTEMA
+           ============================ */
+        document.addEventListener('DOMContentLoaded', () => {
+            renderizarCatalogo();
+            configurarEventosGlobais();
+        });
+
+        /* ============================
+           MÓDULOS DE RENDERIZAÇÃO
+           ============================ */
+        function renderizarCatalogo() {
+            const container = document.getElementById('productList');
+            let html = '';
+
+            catalogo.forEach((secao, secIndex) => {
+                html += `
+                    <div class="category">
+                        <h2>${secao.categoria}</h2>
+                `;
+                
+                secao.produtos.forEach((produto, prodIndex) => {
+                    const id = `prod_${secIndex}_${prodIndex}`; // Ex: prod_0_5
+                    
+                    html += `
+                        <div class="product" id="container_${id}">
+                            <div class="product-name">${produto}</div>
+                            <div class="controls">
+                                <div class="qty-wrapper">
+                                    <button class="btn-minus" onclick="decrementarQuantidade('${id}')" title="Diminuir">-</button>
+                                    <input type="number" id="${id}" class="qty-input" value="0" min="0" 
+                                        data-categoria="${secao.categoria}" data-nome="${produto}">
+                                </div>
+                                <div class="quick-add">
+                                    <button class="btn-add" onclick="incrementarQuantidade('${id}', 1)">+1</button>
+                                    <button class="btn-add" onclick="incrementarQuantidade('${id}', 5)">+5</button>
+                                    <button class="btn-add" onclick="incrementarQuantidade('${id}', 10)">+10</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        /* ============================
+           FUNÇÕES DE MANIPULAÇÃO 
+           ============================ */
+
+        // Função responsável por adicionar a quantidade nos botões laterais
+        function incrementarQuantidade(id, valorSoma) {
+            const input = document.getElementById(id);
+            let valorAtual = parseInt(input.value) || 0;
+            
+            input.value = valorAtual + valorSoma;
+            atualizarEstiloProduto(id);
+        }
+
+        // Função responsável pelo botão (-) que não permite menor que 0
+        function decrementarQuantidade(id) {
+            const input = document.getElementById(id);
+            let valorAtual = parseInt(input.value) || 0;
+            
+            if (valorAtual > 0) {
+                input.value = valorAtual - 1;
+                atualizarEstiloProduto(id);
+            }
+        }
+
+        // Aplica o destaque na caixa da bateria (verde) se tiver item > 0
+        function atualizarEstiloProduto(id) {
+            const input = document.getElementById(id);
+            const container = document.getElementById(`container_${id}`);
+            
+            // Higienização de dados
+            let valor = parseInt(input.value);
+            if (isNaN(valor) || valor < 0) {
+                input.value = 0;
+                valor = 0;
+            }
+
+            // Alternância de classe
+            if (valor > 0) {
+                container.classList.add('active');
+            } else {
+                container.classList.remove('active');
+            }
+        }
+
+        // Limpa todos os valores do DOM e destrava estilos
+        function limparPedido() {
+            if(confirm("Tem certeza que deseja zerar todas as baterias do pedido atual?")) {
+                const inputs = document.querySelectorAll('.qty-input');
+                inputs.forEach(input => {
+                    input.value = 0;
+                    atualizarEstiloProduto(input.id);
+                });
+                
+                // Limpa também o cliente por conveniência e fecha mensagens de erro
+                document.getElementById('codigoCliente').value = '';
+                document.getElementById('authError').style.display = 'none';
+                
+                mostrarAviso("Pedido limpo com sucesso.");
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        /* ============================
+           VALIDAÇÕES DE ACESSO
+           ============================ */
+
+        function validarCodigoCliente() {
+            const inputElement = document.getElementById('codigoCliente');
+            const erroAviso = document.getElementById('authError');
+            
+            // Remove espaços e deixa tudo em minúsculo para validação
+            const codigoDigitado = inputElement.value.trim().toLowerCase();
+            
+            if (!codigoDigitado) {
+                erroAviso.textContent = "Oops! Você esqueceu de inserir o código do cliente.";
+                erroAviso.style.display = 'block';
+                inputElement.focus();
+                return false;
+            }
+
+            if (!codigosValidos.includes(codigoDigitado)) {
+                erroAviso.textContent = "Código inválido ou cliente não cadastrado na base.";
+                erroAviso.style.display = 'block';
+                inputElement.focus();
+                return false;
+            }
+
+            erroAviso.style.display = 'none';
+            return true;
+        }
+
+        // Delegação de Eventos para inputs manuais
+        function configurarEventosGlobais() {
+            // Event Delegation que escuta inputs alterados em todo o container
+            document.getElementById('productList').addEventListener('input', (e) => {
+                if(e.target.classList.contains('qty-input')) {
+                    // Impede o usuário de digitar qualquer coisa não númerica como "e", "-", "+"
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                    atualizarEstiloProduto(e.target.id);
+                }
+            });
+
+            // Se o usuário apertar Enter no input cliente, esconde o teclado no mobile
+            const inputCliente = document.getElementById('codigoCliente');
+            inputCliente.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') {
+                    e.target.blur(); 
+                }
+            });
+            
+            // Restaura o visual padrão ao digitar novamente no cliente
+            inputCliente.addEventListener('input', () => {
+                document.getElementById('authError').style.display = 'none';
+            });
+        }
+
+        /* ============================
+           GERAÇÃO DE TEXTO PARA WPP
+           ============================ */
+
+        function gerarTextoPedido() {
+            const inputs = document.querySelectorAll('.qty-input');
+            let pedidoMap = new Map();
+            let qtdTotalNoAparelho = 0;
+
+            // Laço pelos inputs preenchidos
+            inputs.forEach(input => {
+                const qtdSelecionada = parseInt(input.value) || 0;
+
+                if (qtdSelecionada > 0) {
+                    const cate = input.getAttribute('data-categoria');
+                    const nomeStr = input.getAttribute('data-nome');
+                    
+                    // Se a categoria ainda não existe no mapa, inicializa o Array relacional
+                    if (!pedidoMap.has(cate)) {
+                        pedidoMap.set(cate, []);
+                    }
+                    
+                    pedidoMap.get(cate).push({ nome: nomeStr, qtd: qtdSelecionada });
+                    qtdTotalNoAparelho += qtdSelecionada;
+                }
+            });
+
+            // Segurança: Se não há baterias no pedido
+            if (qtdTotalNoAparelho === 0) {
+                return null;
+            }
+
+            // Inicia montagem do texto
+            const codClient = document.getElementById('codigoCliente').value.trim();
+            
+            let strTexto = `*PEDIDO DE BATERIAS*\n`;
+            strTexto += `*Cliente:* ${codClient}\n\n`;
+
+            // Varredura por Categoria
+            pedidoMap.forEach((listaProdutos, categoriaApurada) => {
+                strTexto += `*${categoriaApurada}*\n`;
+                
+                listaProdutos.forEach(p => {
+                    strTexto += `${p.nome} - ${p.qtd}\n`;
+                });
+                
+                strTexto += `\n`; // Espaçamento extra abaixo de cada categoria
+            });
+
+            // Retorna tudo formatado eliminando espaços perdidos nas bordas
+            return strTexto.trim();
+        }
+
+        function enviarWhatsapp() {
+            // Regra 1: Passar Pela Validação Anti Spam
+            if (!validarCodigoCliente()) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            // Regra 2: Capturar Texto Customizado
+            const templateTexto = gerarTextoPedido();
+
+            if (!templateTexto) {
+                mostrarAviso("Não é possível enviar um pedido em branco. Por favor selecione as quantidades.");
+                return;
+            }
+
+            // Regra 3: Fazer o escape da URL para que as quebras de linha e emojis funcionem 
+            const msgCodificadaParaUrl = encodeURIComponent(templateTexto);
+            
+            // Regra 4: Disparar para a API de Click-To-Chat do WhatsApp em target novo
+            const urlPronta = `https://wa.me/${NUMERO_WHATSAPP}?text=${msgCodificadaParaUrl}`;
+            window.open(urlPronta, '_blank');
+        }
+
+        /* ============================
+           UTILITÁRIOS 
+           ============================ */
+
+        function mostrarAviso(mensagemStr) {
+            const elToast = document.getElementById('toast');
+            elToast.textContent = mensagemStr;
+            elToast.classList.add('show');
+            
+            // Some após 3 segundos
+            setTimeout(() => {
+                elToast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
