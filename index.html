@@ -36,7 +36,7 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-size: 18px; /* Fonte base grande para legibilidade em celular */
+            font-size: 16px; /* Fonte base reduzida ligeiramente */
             line-height: 1.5;
             padding-bottom: 90px; /* Evita que a barra inferior cubra os últimos itens */
         }
@@ -56,7 +56,7 @@
         }
 
         h1 {
-            font-size: 26px;
+            font-size: 22px;
             margin-bottom: 10px;
             color: var(--primary-dark);
         }
@@ -110,28 +110,55 @@
            LISTA DE PRODUTOS
            ============================ */
         .category {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .category h2 {
-            font-size: 20px;
+            font-size: 18px;
             background-color: var(--primary-dark);
             color: white;
-            padding: 10px 15px;
+            padding: 12px 15px;
             border-radius: 4px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .category h2::after {
+            content: '▼';
+            font-size: 14px;
+            transition: transform 0.3s;
+        }
+
+        .category.open h2::after {
+            transform: rotate(180deg);
+        }
+
+        .category-content {
+            display: none;
+        }
+
+        .category.open .category-content {
+            display: block;
         }
 
         .product {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
             background-color: var(--card-bg);
-            padding: 15px;
+            padding: 10px;
             border-radius: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             transition: background-color 0.3s, border-color 0.3s;
             border: 1px solid transparent;
+            gap: 10px;
         }
 
         /* Destaque visual quando há itens selecionados */
@@ -142,16 +169,21 @@
 
         .product-name {
             font-weight: bold;
-            margin-bottom: 12px;
+            font-size: 14px;
+            flex: 1 1 auto;
+            min-width: 70px;
+            word-break: break-word;
+            line-height: 1.2;
         }
 
         /* Controle de Quantidade e Botões rápidos */
         .controls {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            flex-wrap: wrap; /* Ajusta botões para nova linha se a tela for pequena */
+            justify-content: flex-end;
+            gap: 6px;
+            flex-wrap: wrap; /* Ajuda a ajustar em telas minusculas se necessário */
+            flex: 0 0 auto;
         }
         
         .qty-wrapper {
@@ -160,16 +192,18 @@
         }
 
         .qty-input {
-            width: 60px;
-            height: 44px;
+            width: 44px;
+            height: 38px;
             text-align: center;
-            font-size: 20px;
+            font-size: 16px;
             border: 1px solid var(--border-color);
-            margin: 0 10px;
+            margin: 0 6px;
             border-radius: 4px;
             font-weight: bold;
             /* Remover setas laterais nativas do input type=number */
             -moz-appearance: textfield;
+            appearance: textfield;
+            padding: 0;
         }
         
         .qty-input::-webkit-outer-spin-button,
@@ -180,7 +214,7 @@
 
         .quick-add {
             display: flex;
-            gap: 8px;
+            gap: 4px;
         }
 
         /* Botões padronizados (animação simples) */
@@ -193,6 +227,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            height: 38px;
         }
 
         .btn-minus:active, .btn-add:active {
@@ -202,18 +237,16 @@
         .btn-minus {
             background-color: #f44336;
             color: white;
-            width: 44px;
-            height: 44px;
-            font-size: 24px;
+            width: 38px;
+            font-size: 20px;
         }
 
         .btn-add {
             background-color: #e0e0e0;
             color: #333;
-            padding: 10px;
-            min-width: 50px;
-            height: 44px;
-            font-size: 16px;
+            width: 38px;
+            font-size: 14px;
+            padding: 0;
         }
 
         /* ============================
@@ -316,11 +349,11 @@
             <p>Selecione as quantidades e envie o pedido diretamente pelo WhatsApp</p>
         </header>
 
-        <!-- Campo Obrigatório para evitar Spam -->
+        <!-- Campo Obrigatório de Identificação -->
         <section class="auth-section">
-            <label for="codigoCliente">Código do Cliente *</label>
-            <input type="text" id="codigoCliente" placeholder="Ex: cliente123" autocomplete="off">
-            <div id="authError" class="auth-error">Código de cliente não encontrado ou não preenchido.</div>
+            <label for="codigoCliente">Nome do Cliente / Razão Social *</label>
+            <input type="text" id="codigoCliente" placeholder="Ex: João da Silva ou Oficina XPTO" autocomplete="off">
+            <div id="authError" class="auth-error">O nome do cliente é obrigatório.</div>
         </section>
 
         <!-- Área onde os produtos serão carregados via JS -->
@@ -353,15 +386,9 @@
         
         // Número da loja (Código do país 55 + DDD + Número)
         // O usuário lojista deve preenchê-lo
-        const NUMERO_WHATSAPP = "5531985404953"; 
+        const NUMERO_WHATSAPP = "5511999999999"; 
         
-        // Lista local de clientes válidos
-        // Sugestão: Manter sempre em minúsculo para facilitar validação
-        const codigosValidos = [
-            "dani",
-            "bibi",
-            "goval"
-        ];
+
 
         /* ============================
            BASE DE DADOS DE PRODUTOS
@@ -416,14 +443,20 @@
         /* ============================
            MÓDULOS DE RENDERIZAÇÃO
            ============================ */
+        function toggleCategory(index) {
+            const cat = document.getElementById(`cat_${index}`);
+            cat.classList.toggle('open');
+        }
+
         function renderizarCatalogo() {
             const container = document.getElementById('productList');
             let html = '';
 
             catalogo.forEach((secao, secIndex) => {
                 html += `
-                    <div class="category">
-                        <h2>${secao.categoria}</h2>
+                    <div class="category" id="cat_${secIndex}">
+                        <h2 onclick="toggleCategory(${secIndex})">${secao.categoria}</h2>
+                        <div class="category-content">
                 `;
                 
                 secao.produtos.forEach((produto, prodIndex) => {
@@ -448,7 +481,7 @@
                     `;
                 });
                 
-                html += `</div>`;
+                html += `</div></div>`;
             });
 
             container.innerHTML = html;
@@ -524,18 +557,11 @@
             const inputElement = document.getElementById('codigoCliente');
             const erroAviso = document.getElementById('authError');
             
-            // Remove espaços e deixa tudo em minúsculo para validação
-            const codigoDigitado = inputElement.value.trim().toLowerCase();
+            // Remove espaços em branco
+            const codigoDigitado = inputElement.value.trim();
             
             if (!codigoDigitado) {
-                erroAviso.textContent = "Oops! Você esqueceu de inserir o código do cliente.";
-                erroAviso.style.display = 'block';
-                inputElement.focus();
-                return false;
-            }
-
-            if (!codigosValidos.includes(codigoDigitado)) {
-                erroAviso.textContent = "Código inválido ou cliente não cadastrado na base.";
+                erroAviso.textContent = "Oops! Você esqueceu de inserir o nome do cliente.";
                 erroAviso.style.display = 'block';
                 inputElement.focus();
                 return false;
